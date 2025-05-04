@@ -49,9 +49,9 @@ checkbox_vars = []
 
 
 # Veritabanı bağlantısı ve tablo oluşturma
-kullanici_veritabani = sqlite3.connect("kullaniciKaydi2.db")
+kullanici_veritabani = sqlite3.connect("kullaniciKaydi3.db")
 curr = kullanici_veritabani.cursor()
-curr.execute('''CREATE TABLE IF NOT EXISTS kullaniciKaydi2 (
+curr.execute('''CREATE TABLE IF NOT EXISTS kullaniciKaydi3 (
   password TEXT NOT NULL,
   ad TEXT NOT NULL,
   tc TEXT NOT NULL
@@ -87,22 +87,22 @@ def kullanici_giris():
 
         try:
             # Veritabanına bağlantı
-            with sqlite3.connect("kullaniciKaydi2.db") as conn:
+            with sqlite3.connect("kullaniciKaydi3.db") as conn:
                 cursor = conn.cursor()
             
             # Daha önce kayıt yapılmış mı kontrolü
-                cursor.execute("SELECT COUNT(*) FROM kullaniciKaydi2")
+                cursor.execute("SELECT COUNT(*) FROM kullaniciKaydi3")
                 mevcut_kullanici_sayisi = cursor.fetchone()[0]
                 if mevcut_kullanici_sayisi >= 1:
                     messagebox.showwarning("Uyarı", "Zaten bir kullanıcı kaydı yapılmış!")
                     return
 
-                cursor.execute("SELECT * FROM kullaniciKaydi2 WHERE tc=?", (tc,))
+                cursor.execute("SELECT * FROM kullaniciKaydi3 WHERE tc=?", (tc,))
                 if cursor.fetchone():  # TC zaten varsa
                     messagebox.showerror("Hata", "Bu TC kimlik numarası zaten mevcut!")
                     return
 
-                cursor.execute("INSERT INTO kullaniciKaydi2 (ad, tc, password) VALUES (?, ?, ?)", (ad, tc, password))
+                cursor.execute("INSERT INTO kullaniciKaydi3 (ad, tc, password) VALUES (?, ?, ?)", (ad, tc, password))
                 conn.commit()
 
             messagebox.showinfo("Kayıt", "Kullanıcı başarıyla kaydedildi!")
@@ -130,9 +130,9 @@ def bilgi_ekrani():
     listeKutusu.pack(pady=10)
 
     # Veritabanından kullanıcıları getir ve listbox'a ekle
-    conn = sqlite3.connect("kullaniciKaydi2.db")
+    conn = sqlite3.connect("kullaniciKaydi3.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT ad, tc, password FROM kullaniciKaydi2")
+    cursor.execute("SELECT ad, tc, password FROM kullaniciKaydi3")
     veriler = cursor.fetchall()
     conn.close()
 
@@ -151,9 +151,9 @@ def bilgi_ekrani():
 
 
 def verileri_yenile():
-    conn = sqlite3.connect("kullaniciKaydi2.db")
+    conn = sqlite3.connect("kullaniciKaydi3.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT ad, tc, password FROM kullaniciKaydi2")
+    cursor.execute("SELECT ad, tc, password FROM kullaniciKaydi3")
     veriler = cursor.fetchall()
     conn.close()
 
@@ -180,9 +180,9 @@ def sil():
     cevap = messagebox.askokcancel("Sil", f"TC {tc} olan kullanıcıyı silmek istiyor musunuz?")
     if cevap:
         try:
-            conn = sqlite3.connect("kullaniciKaydi2.db")
+            conn = sqlite3.connect("kullaniciKaydi3.db")
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM kullaniciKaydi2 WHERE tc=?", (tc,))
+            cursor.execute("DELETE FROM kullaniciKaydi3 WHERE tc=?", (tc,))
             conn.commit()
             conn.close()
             messagebox.showinfo("Başarılı", f"TC {tc} olan kullanıcı silindi.")
@@ -274,9 +274,9 @@ def sifre_ile_onayla():
     girilen_sifre = password_var.get()
 
     try:
-        conn = sqlite3.connect("kullaniciKaydi2.db")
+        conn = sqlite3.connect("kullaniciKaydi3.db")
         cursor = conn.cursor()
-        cursor.execute("SELECT password FROM kullaniciKaydi2 LIMIT 1")  # İlk kullanıcıyı al
+        cursor.execute("SELECT password FROM kullaniciKaydi3 LIMIT 1")  # İlk kullanıcıyı al
         sonuc = cursor.fetchone()
         conn.close()
 
