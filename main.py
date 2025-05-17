@@ -18,7 +18,7 @@ labelPhoto.pack()
 listeKutusu = ""
 listelePenceresi = ""
 
-API_KEY = "611ca93c4c578a13efb0b07093b39c8c" 
+API_KEY = "ed5dd4ff7fd43c20825a139d5be0d667" 
 
 
 
@@ -224,10 +224,9 @@ secilen_ucuslar = []
 ucus_verileri = []
 
 
-
 def arama_yap():
     for cb in check_buttons:
-        cb.destroy()
+        cb.destroy() 
     check_buttons.clear()
     check_vars.clear()
 
@@ -244,10 +243,29 @@ def arama_yap():
             result_label.config(text="Şehirlerden biri tanınmadı.")
             return
 
-        url = f"http://api.aviationstack.com/v1/flights?access_key={API_KEY}&dep_iata={nereden}&arr_iata={nereye}"
+        url =  f"http://api.aviationstack.com/v1/flights?access_key={API_KEY}&dep_iata={nereden}&arr_iata={nereye}"
+
         response = requests.get(url)
+
+        # Yanıtın başarılı olup olmadığını kontrol et
+        if response.status_code != 200:
+            result_label.config(text=f"❌ API yanıtı alınamadı. Hata Kodu: {response.status_code}", fg="red")
+            print(f"API Hata Kodu: {response.status_code}")
+            print("Hata Mesajı: ", response.text)
+            return
+
         data = response.json()
 
+        response = requests.get(url)
+        print(response.status_code)  # 200 başarılı, 4xx/5xx hata
+        
+        
+
+        
+        print(data)  # Yanıtı yazdırarak kontrol edin
+
+
+        # API yanıtını kontrol et
         if "data" in data and data["data"]:
             result_label.config(text="")  # önceki mesajları temizle
             for flight in data["data"][:5]:
@@ -263,15 +281,19 @@ def arama_yap():
 
                 check_vars.append(var)
                 check_buttons.append(cb)
-                ucus_verileri.append(flight)  # bura onemli
+                ucus_verileri.append(flight)
         else:
-            result_label.config(text="Uçuş bulunamadı.")
+            result_label.config(text="❌ Uçuş bulunamadı. Farklı bir şehir adı veya uçuş aramayı deneyin.", fg="red")
     except Exception as e:
-        result_label.config(text=f"Hata: {str(e)}")
+        result_label.config(text=f"Hata: {str(e)}", fg="red")
+        print(f"Beklenmedik Hata: {str(e)}")
+
+
 
 def sifre_ile_onayla():
     global secilenler
     girilen_sifre = password_var.get()
+    
 
     try:
         conn = sqlite3.connect("kullaniciKaydi3.db")
@@ -303,11 +325,23 @@ def sifre_ile_onayla():
             result_label.config(text="✅ Uçuş seçildi", fg="green")
             
             # Global listeyi güncelle
+    
+
+
+      # sorun burada cozuldu   ******
+    # Global listeyi güncelle
             secilen_ucuslar.clear()
             secilen_ucuslar.extend(secilenler)
 
-            # Koltuk seçim penceresini aç
-            open_flight_details(secilenler[0])
+    # Uçuş verisini al
+            flight_data = secilenler[0]
+
+    # Koltuk seçim penceresini aç
+            koltuk_sec(flight_data)
+
+
+
+            # open_flight_details(secilenler[0])
         
             # Uçuş detaylarını aç (isteğe bağlı, sadece uçuş bilgisi değil, koltuk seçimini önce yapabiliriz)
             # open_flight_details(secilenler[0])
@@ -361,8 +395,8 @@ secilen_koltuk = StringVar(value="")  # Başlangıçta seçilen koltuk yok
 
 dolu_koltuklar = ["A2", "B3", "C1"]  # Örnek dolu koltuklar
 
-"""
-def koltuk_sec():
+
+def koltuk_sec(flight_data):  # bura öneli flight_data yı buraya yazmalıyım
     global secilen_koltuk, onceki_buton
     koltuk_penceresi = Toplevel()
     koltuk_penceresi.title("Koltuk Seçimi")
@@ -420,7 +454,7 @@ def koltuk_sec():
     # Uçuş bilgileri butonunu düzelt
     ucus_bilgileri = Button(koltuk_penceresi, text="Uçuş Bilgileri", command=lambda: open_flight_details(flight_data), font=("Arial", 14), bg="yellow")
     ucus_bilgileri.place(x=50,y=350)  # Konumunu değiştirdim
-"""
+
 
 def open_flight_details(flight_data):
     print(flight_data)
@@ -434,6 +468,7 @@ def open_flight_details(flight_data):
     departure_time = flight_data["departure"]["scheduled"]
     arrival_airport = flight_data["arrival"]["airport"]
     arrival_time = flight_data["arrival"]["scheduled"]
+    koltuk_numara = secilen_koltuk
 
     # Koltuk numarasını secilen_koltuk'tan alıyoruz
     koltuk_numara = secilen_koltuk.get()

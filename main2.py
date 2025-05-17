@@ -6,6 +6,8 @@ import requests
 
 
 
+
+
 screen = Tk()
 screen.title("Türk Hava Yollari")
 
@@ -16,7 +18,7 @@ labelPhoto.pack()
 listeKutusu = ""
 listelePenceresi = ""
 
-API_KEY = "611ca93c4c578a13efb0b07093b39c8c" 
+API_KEY = "ed5dd4ff7fd43c20825a139d5be0d667" 
 
 
 
@@ -222,10 +224,9 @@ secilen_ucuslar = []
 ucus_verileri = []
 
 
-
 def arama_yap():
     for cb in check_buttons:
-        cb.destroy()
+        cb.destroy() 
     check_buttons.clear()
     check_vars.clear()
 
@@ -242,10 +243,29 @@ def arama_yap():
             result_label.config(text="Şehirlerden biri tanınmadı.")
             return
 
-        url = f"http://api.aviationstack.com/v1/flights?access_key={API_KEY}&dep_iata={nereden}&arr_iata={nereye}"
+        url =  f"http://api.aviationstack.com/v1/flights?access_key={API_KEY}&dep_iata={nereden}&arr_iata={nereye}"
+
         response = requests.get(url)
+
+        # Yanıtın başarılı olup olmadığını kontrol et
+        if response.status_code != 200:
+            result_label.config(text=f"❌ API yanıtı alınamadı. Hata Kodu: {response.status_code}", fg="red")
+            print(f"API Hata Kodu: {response.status_code}")
+            print("Hata Mesajı: ", response.text)
+            return
+
         data = response.json()
 
+        response = requests.get(url)
+        print(response.status_code)  # 200 başarılı, 4xx/5xx hata
+        
+        
+
+        
+        print(data)  # Yanıtı yazdırarak kontrol edin
+
+
+        # API yanıtını kontrol et
         if "data" in data and data["data"]:
             result_label.config(text="")  # önceki mesajları temizle
             for flight in data["data"][:5]:
@@ -261,11 +281,13 @@ def arama_yap():
 
                 check_vars.append(var)
                 check_buttons.append(cb)
-                ucus_verileri.append(flight)  # bura onemli
+                ucus_verileri.append(flight)
         else:
-            result_label.config(text="Uçuş bulunamadı.")
+            result_label.config(text="❌ Uçuş bulunamadı. Farklı bir şehir adı veya uçuş aramayı deneyin.", fg="red")
     except Exception as e:
-        result_label.config(text=f"Hata: {str(e)}")
+        result_label.config(text=f"Hata: {str(e)}", fg="red")
+        print(f"Beklenmedik Hata: {str(e)}")
+
 
 
 def sifre_ile_onayla():
@@ -424,23 +446,14 @@ def koltuk_sec(flight_data):  # bura öneli flight_data yı buraya yazmalıyım
                 Label(koltuk_penceresi, text=f"Rastgele seçilen koltuk: {rastgele}", font=("Arial", 14), fg="green").pack(pady=10)
         else:
             Label(koltuk_penceresi, text="Bütün koltuklar dolu!", font=("Arial", 14), fg="red").pack(pady=10)
+
     # Rastgele koltuk seçme butonu
     rastgele_button = Button(koltuk_penceresi, text="Rastgele Koltuk Seç", command=rastgele_koltuk, font=("Arial", 14), bg="yellow")
     rastgele_button.place(x=50,y=300)
 
-
-
-
-
-    def koltuk_kontrol():
-
-        if not secilen_koltuk.get():  # Eğer hiç koltuk seçilmemişse boş string olur
-            messagebox.showwarning("Koltuk Seçilmedi", "❗ Lütfen önce bir koltuk seçin.")
-        else:  
-            ucus_bilgileri = Button(koltuk_penceresi, text="Uçuş Bilgileri", command=lambda: open_flight_details(flight_data), font=("Arial", 14), bg="yellow")
-            ucus_bilgileri.place(x=50,y=350)  # Konumunu değiştirdim
-    devam_button = Button(koltuk_penceresi, text="Devam Et", command=koltuk_kontrol, font=("Arial", 14), bg="lightblue")
-    devam_button.place(x=200, y=350)
+    # Uçuş bilgileri butonunu düzelt
+    ucus_bilgileri = Button(koltuk_penceresi, text="Uçuş Bilgileri", command=lambda: open_flight_details(flight_data), font=("Arial", 14), bg="yellow")
+    ucus_bilgileri.place(x=50,y=350)  # Konumunu değiştirdim
 
 
 def open_flight_details(flight_data):
@@ -471,90 +484,8 @@ def open_flight_details(flight_data):
 
     #Button(flight_window, text="Koltuk Seç", command=koltuk_sec, font=("Arial", 14), bg="blue", fg="white").pack(pady=20)
 
-     
-    ödeme_b = Button(flight_window, text="ödeme", command=ödeme_kontrol, font=("Arial", 14), bg="blue")
-    ödeme_b.place(x=300,y=300)
-
-
-
-
-
-
-
-
-
-def ödeme_kontrol():
-   
-    ödeme_screen = Toplevel(screen)
-    ödeme_screen.title("kullanici odeme bolumu")
-    ödeme_screen.geometry("400x400")
-    def limit_kart_num(entry_text):
-        return len(entry_text) <= 16  # En fazla 16 karaktere izin ver
-    
-    vcmd = ödeme_screen.register(limit_kart_num)
-
-
-
-
-    Label(ödeme_screen, text="Kart Numarasi ").pack(pady=5)
-    entry_kartnum = Entry(ödeme_screen ,validate="key",validatecommand=(vcmd, "%P"))
-    entry_kartnum.pack(pady=5)
-    
-    Label(ödeme_screen, text="Kart Sahibi Adi ").pack(pady=5)
-    entry_kartisim = Entry(ödeme_screen)
-    entry_kartisim.pack(pady=5)
-
-    Label(ödeme_screen, text="Son Kullanma Tarihi ").pack(pady=5)
-    entry_karttarih = Entry(ödeme_screen)
-    entry_karttarih.pack(pady=5)
-
-    Label(ödeme_screen, text="CVV (Güvenlik Kodu) ").pack(pady=5)
-    entry_kartsecurity = Entry(ödeme_screen)
-    entry_kartsecurity.pack(pady=5)
-
-    Label(ödeme_screen, text="E-Posta Adresi  ").pack(pady=5)
-    entry_kartsecurity = Entry(ödeme_screen)
-    entry_kartsecurity.pack(pady=5)
-    
-
 
     
-"""
-    if len(entry_kartnum) != 17:
-        result_label.config(text="❗Lütfen kart numaranizi dogru girin", fg="red")
-    else:
-        pass
-
-"""
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
